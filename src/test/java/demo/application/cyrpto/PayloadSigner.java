@@ -10,11 +10,10 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.util.Base64;
 import java.util.Base64.Encoder;
+import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.util.Map;
 
 public class PayloadSigner {
 
