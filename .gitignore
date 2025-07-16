@@ -1,0 +1,13 @@
+/bin/
+/out/
+.gradle
+build
+.classpath
+.settings
+.project
+.idea
+*.iws
+*.ipr
+/target/
+.jqwik-database
+.approval_tests_temp
