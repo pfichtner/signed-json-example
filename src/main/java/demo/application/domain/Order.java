@@ -1,4 +1,4 @@
-package demo.domain;
+package demo.application.domain;
 
 import java.util.UUID;
 

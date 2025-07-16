@@ -1,4 +1,4 @@
-package demo.domain;
+package demo.application.domain;
 
 import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -7,7 +7,7 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
-import demo.domain.Order.Price;
+import demo.application.domain.Order.Price;
 
 class OrderServiceTest {
 

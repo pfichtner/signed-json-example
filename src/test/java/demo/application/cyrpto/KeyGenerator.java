@@ -1,4 +1,4 @@
-package demo.cyrpto;
+package demo.application.cyrpto;
 
 import static lombok.AccessLevel.PRIVATE;
 
@@ -12,11 +12,9 @@ import lombok.NoArgsConstructor;
  * external key infrastructure. NEVER do this in production.
  */
 @NoArgsConstructor(access = PRIVATE)
-public final class KeyMaterial {
+public final class KeyGenerator {
 
-	public static final RSAKey RSA_JWK = rsaKey("demo-key");
-
-	private static RSAKey rsaKey(String keyId) {
+	public static RSAKey newRandomRsaKeyPair(String keyId) {
 		try {
 			return new RSAKeyGenerator(2048).keyID(keyId).generate();
 		} catch (Exception e) {

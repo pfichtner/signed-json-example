@@ -1,4 +1,4 @@
-package demo.application;
+package demo.application.crypto;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS;
 
@@ -11,36 +11,39 @@ import java.security.SignatureException;
 import java.util.Base64;
 import java.util.Map;
 
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 
-/** Centralized application‑layer verification component */
+@Component
 @RequiredArgsConstructor
 public class SignatureVerifier {
 
+	private final ObjectMapper canonicalMapper = new ObjectMapper().configure(ORDER_MAP_ENTRIES_BY_KEYS, true);
 	private final PublicKeyResolver keyResolver;
-	private final ObjectMapper canonicalMapper;
 
-	public SignatureVerifier(PublicKeyResolver keyResolver) {
-		this(keyResolver, new ObjectMapper().configure(ORDER_MAP_ENTRIES_BY_KEYS, true));
-	}
-
-	/** Verifies signature and converts the payload to the requested target type. */
-	public <T> T verifyAndMap(Map<String, Object> payload, String signatureBase64, String keyId, Class<T> targetType) {
-		verify(payload, signatureBase64, keyId);
+	/**
+	 * Verifies signature and converts the payload to the requested target type.
+	 * 
+	 * @param hashAlgorithmn TODO
+	 */
+	public <T> T verifyAndMap(Map<String, Object> payload, String signatureBase64, String keyId, String hashAlgorithmn,
+			Class<T> targetType) {
+		verify(payload, signatureBase64, keyId, hashAlgorithmn);
 		return canonicalMapper.convertValue(payload, targetType);
 	}
 
-	/** Verifies signature . */
-	public <T> void verify(Map<String, Object> payload, String signatureBase64, String keyId) {
+	public <T> void verify(Map<String, Object> payload, String signatureBase64, String keyId, String hashAlgorithmn) {
 		try {
-			String normalizedJsonString = normalizedJsonString(payload);
 			byte[] signatureBytes = Base64.getDecoder().decode(signatureBase64);
 
-			if (!verifySignature(keyId, normalizedJsonString, signatureBytes)) {
-				throw new SecurityException("Invalid signature");
+			String normalizedJsonString = normalizedJsonString(payload);
+			Signature signature = signature(keyResolver.resolve(keyId), normalizedJsonString, hashAlgorithmn);
+			if (!signature.verify(signatureBytes)) {
+				throw new SignatureVerificationException("Invalid signature");
 			}
 		} catch (JsonProcessingException e) {
 			throw new IllegalArgumentException("Cannot serialize payload", e);
@@ -53,13 +56,12 @@ public class SignatureVerifier {
 		return canonicalMapper.writeValueAsString(payload);
 	}
 
-	private boolean verifySignature(String keyId, String signedDocument, byte[] signatureBytes)
+	private Signature signature(PublicKey publicKey, String signedDocument, String hashAlgorithm)
 			throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-		PublicKey publicKey = keyResolver.resolve(keyId);
-		Signature sig = Signature.getInstance("SHA256withRSA");
+		Signature sig = Signature.getInstance(hashAlgorithm);
 		sig.initVerify(publicKey);
 		sig.update(signedDocument.getBytes(StandardCharsets.UTF_8));
-		return sig.verify(signatureBytes);
+		return sig;
 	}
 
 }

@@ -1,4 +1,4 @@
-package demo.web;
+package demo.application.web;
 
 import java.util.Map;
 
