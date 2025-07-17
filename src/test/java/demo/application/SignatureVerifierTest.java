@@ -3,26 +3,21 @@ package demo.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.RSAKey;
 
 import demo.application.crypto.Base64String;
 import demo.application.crypto.HashAlgorithm;
 import demo.application.crypto.KeyId;
+import demo.application.crypto.SignatureUtil;
 import demo.application.crypto.SignatureVerificationException;
 import demo.application.crypto.SignatureVerifier;
 import demo.application.cyrpto.KeyGenerator;
-import demo.application.cyrpto.PayloadSigner;
 import demo.application.domain.Order;
 import demo.application.domain.Order.Price;
 
@@ -53,7 +48,8 @@ class SignatureVerifierTest {
 	@Test
 	void rejectsInvalidSignature() throws Exception {
 		assertThatThrownBy(() -> verifier.verifyAndMap(addAttributeTo(payload), signature(), testKeyId(),
-				HASH_ALGORITHMN, Order.class)).isInstanceOf(SignatureVerificationException.class);
+				HASH_ALGORITHMN, Order.class)).isInstanceOf(SignatureVerificationException.class)
+				.hasMessageContaining("Invalid", "signature", signature());
 	}
 
 	@Test
@@ -66,9 +62,8 @@ class SignatureVerifierTest {
 		return new KeyId(testKeyPair.getKeyID());
 	}
 
-	private Base64String signature() throws NoSuchAlgorithmException, InvalidKeyException, SignatureException,
-			JsonProcessingException, JOSEException {
-		return new PayloadSigner(testKeyPair.toPrivateKey(), HASH_ALGORITHMN).sign(payload);
+	private Base64String signature() throws Exception {
+		return SignatureUtil.createSignature(payload, testKeyPair.toPrivateKey(), HASH_ALGORITHMN);
 	}
 
 	private static Map<String, Object> addAttributeTo(Map<String, Object> payload) {

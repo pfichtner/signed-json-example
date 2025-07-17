@@ -1,5 +1,6 @@
 package demo.application.web;
 
+import static demo.application.crypto.SignatureUtil.createSignature;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static org.mockito.Mockito.verify;
@@ -29,7 +30,6 @@ import demo.application.TestPublicKeyResolver;
 import demo.application.crypto.HashAlgorithm;
 import demo.application.crypto.PublicKeyResolver;
 import demo.application.cyrpto.KeyGenerator;
-import demo.application.cyrpto.PayloadSigner;
 import demo.application.domain.Order;
 import demo.application.domain.Order.Price;
 import demo.application.domain.OrderService;
@@ -166,10 +166,13 @@ class OrderControllerMockMvcTest {
 
 	private String payloadWithSignature(String rawPayload, PrivateKey privateKey) throws Exception {
 		var data = jsonToMap(rawPayload);
-		var hashAlgorithm = new HashAlgorithm("SHA256withRSA");
-		var signature = new PayloadSigner(privateKey, hashAlgorithm).sign(data);
-		return mapToJson(Map.of("payload", data, "signature", signature, "keyId", keyPair.getKeyID(), "algorithm",
-				hashAlgorithm));
+		var hashAlgorithm = "SHA256withRSA";
+		var signature = createSignature(data, privateKey, new HashAlgorithm(hashAlgorithm));
+		return mapToJson(Map.of("payload", data, //
+				"signature", signature, //
+				"keyId", keyPair.getKeyID(), //
+				"algorithm", hashAlgorithm //
+		));
 	}
 
 	@SuppressWarnings("unchecked")
