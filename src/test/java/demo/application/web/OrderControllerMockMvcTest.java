@@ -1,5 +1,6 @@
 package demo.application.web;
 
+import static java.util.stream.Collectors.joining;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -9,6 +10,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +66,27 @@ class OrderControllerMockMvcTest {
 		mockMvc.perform(put("/orders/%s".formatted(id)) //
 				.contentType(APPLICATION_JSON) //
 				.content(payloadWithSignature)) //
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	void acceptsReformatted() throws Exception {
+		var id = "3aebf66c-d8e5-456a-887c-53e5fc45f0a1";
+		var payload = """
+				{
+					"id": "%s",
+					"price": {
+						"amount": 1.99,
+						"currency": "EUR"
+					}
+				}
+				""".formatted(id);
+		var payloadWithSignature = payloadWithSignature(payload, Config.keyPair.toPrivateKey());
+		var reformattedJson = payloadWithSignature.lines().map(l -> "   \t  " + l).collect(joining("\n"));
+		assert !payloadWithSignature.equals(reformattedJson);
+		mockMvc.perform(put("/orders/%s".formatted(id)) //
+				.contentType(APPLICATION_JSON) //
+				.content(reformattedJson)) //
 				.andExpect(status().isOk());
 	}
 
