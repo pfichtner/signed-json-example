@@ -12,12 +12,12 @@ import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import demo.application.crypto.Base64String;
 import demo.application.crypto.JsonNormalizer;
 
 public class PayloadSigner {
 
 	private final Signature signer;
-	private final Encoder encoder = Base64.getEncoder();
 	private final JsonNormalizer jsonNormalizer = new JsonNormalizer();
 
 	public PayloadSigner(PrivateKey privateKey, String hashAlgorithm) {
@@ -29,7 +29,7 @@ public class PayloadSigner {
 		}
 	}
 
-	public String sign(Map<String, Object> payload)
+	public Base64String sign(Map<String, Object> payload)
 			throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, JsonProcessingException {
 		String normalizedDocumentToSign = jsonNormalizer.normalize(payload);
 		byte[] signature;
@@ -37,7 +37,7 @@ public class PayloadSigner {
 			signer.update(normalizedDocumentToSign.getBytes(StandardCharsets.UTF_8));
 			signature = signer.sign();
 		}
-		return encoder.encodeToString(signature);
+		return new Base64String(signature);
 	}
 
 }

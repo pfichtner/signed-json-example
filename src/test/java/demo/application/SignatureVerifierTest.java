@@ -16,6 +16,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.RSAKey;
 
+import demo.application.crypto.Base64String;
 import demo.application.crypto.SignatureVerificationException;
 import demo.application.crypto.SignatureVerifier;
 import demo.application.cyrpto.KeyGenerator;
@@ -52,7 +53,7 @@ class SignatureVerifierTest {
 				.isInstanceOf(SignatureVerificationException.class);
 	}
 
-	private String createSignature() throws NoSuchAlgorithmException, InvalidKeyException, SignatureException,
+	private Base64String createSignature() throws NoSuchAlgorithmException, InvalidKeyException, SignatureException,
 			JsonProcessingException, JOSEException {
 		return new PayloadSigner(testKeyPair.toPrivateKey(), HASH_ALGORITHMN).sign(payload);
 	}

@@ -6,7 +6,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
-import java.util.Base64;
 import java.util.Map;
 
 import org.springframework.stereotype.Component;
@@ -28,23 +27,23 @@ public class SignatureVerifier {
 	 * 
 	 * @param hashAlgorithmn TODO
 	 */
-	public <T> T verifyAndMap(Map<String, Object> payload, String signatureBase64, String keyId, String hashAlgorithmn,
+	public <T> T verifyAndMap(Map<String, Object> payload, Base64String signature, String keyId, String hashAlgorithmn,
 			Class<T> targetType) {
-		verify(payload, signatureBase64, keyId, hashAlgorithmn);
+		verify(payload, signature, keyId, hashAlgorithmn);
 		return objectMapper.convertValue(payload, targetType);
 	}
 
-	public <T> void verify(Map<String, Object> payload, String signatureBase64, String keyId, String hashAlgorithmn) {
-		if (!isSignatureOk(payload, signatureBase64, keyId, hashAlgorithmn)) {
+	public <T> void verify(Map<String, Object> payload, Base64String signature, String keyId, String hashAlgorithmn) {
+		if (!isSignatureOk(payload, signature, keyId, hashAlgorithmn)) {
 			throw new SignatureVerificationException("Invalid signature");
 		}
 	}
 
-	private boolean isSignatureOk(Map<String, Object> payload, String signatureBase64, String keyId,
+	private boolean isSignatureOk(Map<String, Object> payload, Base64String signature, String keyId,
 			String hashAlgorithmn) {
 		try {
-			var signature = signature(keyResolver.resolve(keyId), jsonNormalizer.normalize(payload), hashAlgorithmn);
-			return signature.verify(Base64.getDecoder().decode(signatureBase64));
+			return signature(keyResolver.resolve(keyId), jsonNormalizer.normalize(payload), hashAlgorithmn)
+					.verify(signature.decode());
 		} catch (Exception e) {
 			throw new SignatureVerificationException("Signature verification failed", e);
 		}
