@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import demo.application.crypto.SignatureVerifier;
 import lombok.RequiredArgsConstructor;
 
-/** Example use‑case orchestration: verify signature, then call domain. */
 @Service
 @RequiredArgsConstructor
 public class OrderApplicationService {

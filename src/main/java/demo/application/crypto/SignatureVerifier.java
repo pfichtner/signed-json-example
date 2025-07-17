@@ -1,7 +1,5 @@
 package demo.application.crypto;
 
-import static com.fasterxml.jackson.databind.SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS;
-
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -21,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SignatureVerifier {
 
-	private final ObjectMapper canonicalMapper = new ObjectMapper().configure(ORDER_MAP_ENTRIES_BY_KEYS, true);
+	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final JsonNormalizer jsonNormalizer = new JsonNormalizer();
 	private final PublicKeyResolver keyResolver;
 
@@ -33,7 +31,7 @@ public class SignatureVerifier {
 	public <T> T verifyAndMap(Map<String, Object> payload, String signatureBase64, String keyId, String hashAlgorithmn,
 			Class<T> targetType) {
 		verify(payload, signatureBase64, keyId, hashAlgorithmn);
-		return canonicalMapper.convertValue(payload, targetType);
+		return objectMapper.convertValue(payload, targetType);
 	}
 
 	public <T> void verify(Map<String, Object> payload, String signatureBase64, String keyId, String hashAlgorithmn) {
@@ -45,11 +43,8 @@ public class SignatureVerifier {
 	private boolean isSignatureOk(Map<String, Object> payload, String signatureBase64, String keyId,
 			String hashAlgorithmn) {
 		try {
-			byte[] signatureBytes = Base64.getDecoder().decode(signatureBase64);
-
-			String normalizedJsonString = jsonNormalizer.normalize(payload);
-			var signature = signature(keyResolver.resolve(keyId), normalizedJsonString, hashAlgorithmn);
-			return signature.verify(signatureBytes);
+			var signature = signature(keyResolver.resolve(keyId), jsonNormalizer.normalize(payload), hashAlgorithmn);
+			return signature.verify(Base64.getDecoder().decode(signatureBase64));
 		} catch (Exception e) {
 			throw new SignatureVerificationException("Signature verification failed", e);
 		}

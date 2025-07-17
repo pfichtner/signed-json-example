@@ -22,4 +22,5 @@ public class OrderController {
 	public void receive(@PathVariable("id") UUID id, @RequestBody SignedPayloadDTO dto) {
 		orderService.handle(id, dto.payload(), dto.signature(), dto.keyId(), dto.algorithm());
 	}
+
 }
