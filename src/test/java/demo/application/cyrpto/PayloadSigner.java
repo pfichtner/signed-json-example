@@ -18,18 +18,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class PayloadSigner {
 
 	private final Signature signer;
-	private final Encoder encoder;
-	private final ObjectMapper objectMapper;
+	private final Encoder encoder = Base64.getEncoder();
+	private final ObjectMapper objectMapper = new ObjectMapper().configure(ORDER_MAP_ENTRIES_BY_KEYS, true);
 
 	public PayloadSigner(PrivateKey privateKey, String hashAlgorithm) {
-		objectMapper = new ObjectMapper().configure(ORDER_MAP_ENTRIES_BY_KEYS, true);
 		try {
 			signer = Signature.getInstance(hashAlgorithm);
 			signer.initSign(privateKey);
 		} catch (InvalidKeyException | NoSuchAlgorithmException e) {
 			throw new RuntimeException(e);
 		}
-		encoder = Base64.getEncoder();
 	}
 
 	public String sign(Map<?, ?> map)
