@@ -163,10 +163,10 @@ class OrderControllerMockMvcTest {
 	private String payloadWithSignature(String rawPayload, PrivateKey privateKey) throws JsonProcessingException,
 			JsonMappingException, NoSuchAlgorithmException, InvalidKeyException, SignatureException, JOSEException {
 		var data = jsonToMap(rawPayload);
-		var signature = new PayloadSigner(privateKey, "SHA256withRSA").sign(data);
-		var payload = Map.of("payload", data, "signature", signature, "keyId", Config.keyPair.getKeyID(), "algorithm",
-				"SHA256withRSA");
-		return mapToJson(payload);
+		var hashAlgorithm = "SHA256withRSA";
+		var signature = new PayloadSigner(privateKey, hashAlgorithm).sign(data);
+		return mapToJson(Map.of("payload", data, "signature", signature, "keyId", Config.keyPair.getKeyID(),
+				"algorithm", hashAlgorithm));
 	}
 
 	@SuppressWarnings("unchecked")
