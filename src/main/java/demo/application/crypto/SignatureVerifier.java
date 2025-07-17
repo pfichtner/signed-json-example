@@ -27,20 +27,21 @@ public class SignatureVerifier {
 	 * 
 	 * @param hashAlgorithmn TODO
 	 */
-	public <T> T verifyAndMap(Map<String, Object> payload, Base64String signature, KeyId keyId, String hashAlgorithmn,
-			Class<T> targetType) {
+	public <T> T verifyAndMap(Map<String, Object> payload, Base64String signature, KeyId keyId,
+			HashAlgorithm hashAlgorithmn, Class<T> targetType) {
 		verify(payload, signature, keyId, hashAlgorithmn);
 		return objectMapper.convertValue(payload, targetType);
 	}
 
-	public <T> void verify(Map<String, Object> payload, Base64String signature, KeyId keyId, String hashAlgorithmn) {
+	public <T> void verify(Map<String, Object> payload, Base64String signature, KeyId keyId,
+			HashAlgorithm hashAlgorithmn) {
 		if (!isSignatureOk(payload, signature, keyId, hashAlgorithmn)) {
 			throw new SignatureVerificationException("Invalid signature");
 		}
 	}
 
 	private boolean isSignatureOk(Map<String, Object> payload, Base64String signature, KeyId keyId,
-			String hashAlgorithmn) {
+			HashAlgorithm hashAlgorithmn) {
 		try {
 			return signature(keyResolver.resolve(keyId), jsonNormalizer.normalize(payload), hashAlgorithmn)
 					.verify(signature.decode());
@@ -49,9 +50,9 @@ public class SignatureVerifier {
 		}
 	}
 
-	private Signature signature(PublicKey publicKey, String signedDocument, String hashAlgorithm)
+	private Signature signature(PublicKey publicKey, String signedDocument, HashAlgorithm hashAlgorithm)
 			throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-		var signature = Signature.getInstance(hashAlgorithm);
+		var signature = Signature.getInstance(hashAlgorithm.value());
 		signature.initVerify(publicKey);
 		signature.update(signedDocument.getBytes(StandardCharsets.UTF_8));
 		return signature;

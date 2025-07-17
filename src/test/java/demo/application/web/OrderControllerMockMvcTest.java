@@ -32,6 +32,7 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.RSAKey;
 
 import demo.application.TestPublicKeyResolver;
+import demo.application.crypto.HashAlgorithm;
 import demo.application.crypto.PublicKeyResolver;
 import demo.application.cyrpto.KeyGenerator;
 import demo.application.cyrpto.PayloadSigner;
@@ -168,7 +169,7 @@ class OrderControllerMockMvcTest {
 	private String payloadWithSignature(String rawPayload, PrivateKey privateKey) throws JsonProcessingException,
 			JsonMappingException, NoSuchAlgorithmException, InvalidKeyException, SignatureException, JOSEException {
 		var data = jsonToMap(rawPayload);
-		var hashAlgorithm = "SHA256withRSA";
+		var hashAlgorithm = new HashAlgorithm("SHA256withRSA");
 		var signature = new PayloadSigner(privateKey, hashAlgorithm).sign(data);
 		return mapToJson(Map.of("payload", data, "signature", signature, "keyId", keyPair.getKeyID(), "algorithm",
 				hashAlgorithm));

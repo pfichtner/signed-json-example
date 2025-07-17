@@ -11,6 +11,7 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import demo.application.crypto.Base64String;
+import demo.application.crypto.HashAlgorithm;
 import demo.application.crypto.JsonNormalizer;
 
 public class PayloadSigner {
@@ -18,9 +19,9 @@ public class PayloadSigner {
 	private final Signature signer;
 	private final JsonNormalizer jsonNormalizer = new JsonNormalizer();
 
-	public PayloadSigner(PrivateKey privateKey, String hashAlgorithm) {
+	public PayloadSigner(PrivateKey privateKey, HashAlgorithm hashAlgorithm) {
 		try {
-			signer = Signature.getInstance(hashAlgorithm);
+			signer = Signature.getInstance(hashAlgorithm.value());
 			signer.initSign(privateKey);
 		} catch (InvalidKeyException | NoSuchAlgorithmException e) {
 			throw new RuntimeException(e);

@@ -17,6 +17,7 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.RSAKey;
 
 import demo.application.crypto.Base64String;
+import demo.application.crypto.HashAlgorithm;
 import demo.application.crypto.KeyId;
 import demo.application.crypto.SignatureVerificationException;
 import demo.application.crypto.SignatureVerifier;
@@ -27,7 +28,7 @@ import demo.application.domain.Order.Price;
 
 class SignatureVerifierTest {
 
-	private static final String HASH_ALGORITHMN = "SHA256withRSA";
+	private static final HashAlgorithm HASH_ALGORITHMN = new HashAlgorithm("SHA256withRSA");
 
 	RSAKey testKeyPair = KeyGenerator.newRandomRsaKeyPair("demo-key");
 
