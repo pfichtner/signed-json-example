@@ -44,7 +44,7 @@ class OrderControllerTest {
 		UUID anyUUID = UUID.fromString("22e1fa97-e3bb-4b1a-8d94-e81d54089fb4");
 
 		Price price = new Price(1.99, "ABC");
-		Order order = new Order(anyUUID, price);
+		Order order = new Order(anyUUID, "toothbrush", price);
 		Map<String, Object> payload = Map.of("orderId", order.getId(), "price",
 				Map.of("amount", price.getAmount(), "currency", price.getCurrency()));
 		when(verifier.verifyAndMap(payload, new Base64String("someSignature"), new KeyId("someKid"),

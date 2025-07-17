@@ -20,6 +20,7 @@ public class Order {
 	}
 
 	UUID id;
+	String name;
 	Price price;
 
 }

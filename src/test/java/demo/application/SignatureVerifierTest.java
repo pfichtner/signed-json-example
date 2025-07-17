@@ -33,10 +33,12 @@ class SignatureVerifierTest {
 	RSAKey testKeyPair = KeyGenerator.newRandomRsaKeyPair("demo-key");
 
 	UUID orderId = UUID.randomUUID();
+	String name = "toothbrush";
 	double amount = 199.99;
 	String currency = "EUR";
 
-	Map<String, Object> payload = Map.of("id", orderId, "price", Map.of("amount", amount, "currency", currency));
+	Map<String, Object> payload = Map.of("id", orderId, "name", "toothbrush", "price",
+			Map.of("amount", amount, "currency", currency));
 
 	private SignatureVerifier verifier = new SignatureVerifier(new TestPublicKeyResolver(testKeyPair));
 
@@ -44,7 +46,7 @@ class SignatureVerifierTest {
 	void verifiesValidSignature() throws Exception {
 		var deserialized = verifier.verifyAndMap(payload, createSignature(), new KeyId(testKeyPair.getKeyID()),
 				HASH_ALGORITHMN, Order.class);
-		var expected = new Order(orderId, new Price(amount, currency));
+		var expected = new Order(orderId, name, new Price(amount, currency));
 		assertThat(deserialized).isEqualTo(expected);
 	}
 

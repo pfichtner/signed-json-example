@@ -68,6 +68,7 @@ class OrderControllerMockMvcTest {
 		var order = """
 				{
 					"id": "%s",
+					"name": "toothbrush",
 					"price": {
 						"amount": 1.99,
 						"currency": "EUR"
@@ -79,7 +80,7 @@ class OrderControllerMockMvcTest {
 				.contentType(APPLICATION_JSON) //
 				.content(payloadWithSignature)) //
 				.andExpect(status().isOk());
-		verify(orderService).create(id, new Order(id, new Price(1.99, "EUR")));
+		verify(orderService).create(id, new Order(id, "toothbrush", new Price(1.99, "EUR")));
 		verifyNoMoreInteractions(orderService);
 	}
 
@@ -89,6 +90,7 @@ class OrderControllerMockMvcTest {
 		var order = """
 				{
 					"id": "%s",
+					"name": "toothbrush",
 					"price": {
 						"amount": 1.99,
 						"currency": "EUR"
@@ -102,7 +104,7 @@ class OrderControllerMockMvcTest {
 				.contentType(APPLICATION_JSON) //
 				.content(reformattedJson)) //
 				.andExpect(status().isOk());
-		verify(orderService).create(id, new Order(id, new Price(1.99, "EUR")));
+		verify(orderService).create(id, new Order(id, "toothbrush", new Price(1.99, "EUR")));
 		verifyNoMoreInteractions(orderService);
 	}
 
@@ -112,6 +114,7 @@ class OrderControllerMockMvcTest {
 		var order = """
 				{
 					"id": "%s",
+					"name": "toothbrush",
 					"price": {
 						"amount": 1.99,
 						"currency": "EUR"
@@ -134,6 +137,7 @@ class OrderControllerMockMvcTest {
 		var order = """
 				{
 					"id": "%s",
+					"name": "toothbrush",
 					"price": {
 						"amount": 1.99,
 						"currency": "EUR"

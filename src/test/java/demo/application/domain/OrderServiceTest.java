@@ -16,7 +16,7 @@ class OrderServiceTest {
 	@Test
 	void processOrder() {
 		UUID id = randomUUID();
-		Order order = new Order(id, new Price(10, "EUR"));
+		Order order = new Order(id, "toothbrush", new Price(10, "EUR"));
 		assertThatCode(() -> service.create(id, order)).doesNotThrowAnyException();
 	}
 
