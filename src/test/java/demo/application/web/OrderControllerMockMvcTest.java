@@ -43,7 +43,7 @@ class OrderControllerMockMvcTest {
 
 		@Bean
 		RSAKey keyPair() {
-			return KeyGenerator.newRandomRsaKeyPair("demo-key");
+			return KeyGenerator.newRandomRsaKeyPair("some-random-key-id");
 		}
 
 		@Bean

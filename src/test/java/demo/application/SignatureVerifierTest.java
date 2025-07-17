@@ -30,15 +30,16 @@ class SignatureVerifierTest {
 
 	private static final HashAlgorithm HASH_ALGORITHMN = new HashAlgorithm("SHA256withRSA");
 
-	RSAKey testKeyPair = KeyGenerator.newRandomRsaKeyPair("demo-key");
+	RSAKey testKeyPair = KeyGenerator.newRandomRsaKeyPair("some-random-key-id");
 
 	UUID orderId = UUID.randomUUID();
 	String name = "toothbrush";
 	double amount = 199.99;
 	String currency = "EUR";
 
-	Map<String, Object> payload = Map.of("id", orderId, "name", "toothbrush", "price",
-			Map.of("amount", amount, "currency", currency));
+	Map<String, Object> payload = Map.of("id", orderId, //
+			"name", "toothbrush", //
+			"price", Map.of("amount", amount, "currency", currency));
 
 	private SignatureVerifier verifier = new SignatureVerifier(new TestPublicKeyResolver(testKeyPair));
 
