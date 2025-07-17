@@ -1,7 +1,5 @@
 package demo.application.cyrpto;
 
-import static com.fasterxml.jackson.databind.SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS;
-
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -13,13 +11,14 @@ import java.util.Base64.Encoder;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+import demo.application.crypto.JsonNormalizer;
 
 public class PayloadSigner {
 
 	private final Signature signer;
 	private final Encoder encoder = Base64.getEncoder();
-	private final ObjectMapper objectMapper = new ObjectMapper().configure(ORDER_MAP_ENTRIES_BY_KEYS, true);
+	private final JsonNormalizer jsonNormalizer = new JsonNormalizer();
 
 	public PayloadSigner(PrivateKey privateKey, String hashAlgorithm) {
 		try {
@@ -30,9 +29,9 @@ public class PayloadSigner {
 		}
 	}
 
-	public String sign(Map<?, ?> map)
+	public String sign(Map<String, Object> payload)
 			throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, JsonProcessingException {
-		String normalizedDocumentToSign = objectMapper.writeValueAsString(map);
+		String normalizedDocumentToSign = jsonNormalizer.normalize(payload);
 		byte[] signature;
 		synchronized (signer) {
 			signer.update(normalizedDocumentToSign.getBytes(StandardCharsets.UTF_8));

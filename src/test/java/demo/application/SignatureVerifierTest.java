@@ -16,6 +16,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.RSAKey;
 
+import demo.application.crypto.SignatureVerificationException;
 import demo.application.crypto.SignatureVerifier;
 import demo.application.cyrpto.KeyGenerator;
 import demo.application.cyrpto.PayloadSigner;
@@ -47,7 +48,8 @@ class SignatureVerifierTest {
 	@Test
 	void rejectsInvalidSignature() throws Exception {
 		assertThatThrownBy(() -> verifier.verifyAndMap(addAttributeTo(payload), createSignature(),
-				testKeyPair.getKeyID(), HASH_ALGORITHMN, Order.class)).isInstanceOf(SecurityException.class);
+				testKeyPair.getKeyID(), HASH_ALGORITHMN, Order.class))
+				.isInstanceOf(SignatureVerificationException.class);
 	}
 
 	private String createSignature() throws NoSuchAlgorithmException, InvalidKeyException, SignatureException,
