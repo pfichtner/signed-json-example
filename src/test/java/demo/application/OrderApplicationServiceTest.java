@@ -56,7 +56,7 @@ class OrderApplicationServiceTest {
 	}
 
 	@Test
-	void rejectsInvalidSignature() throws Exception {
+	void rejectsModifiedPayloadBecauseOfNonMatchingSignature() throws Exception {
 		assertThatThrownBy(
 				() -> sut.handle(orderId, addAttributeTo(payload), signature(), testKeyId(), HASH_ALGORITHMN))
 				.isInstanceOf(SignatureVerificationException.class)
