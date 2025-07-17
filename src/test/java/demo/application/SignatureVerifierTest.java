@@ -44,14 +44,14 @@ class SignatureVerifierTest {
 
 	@Test
 	void verifiesValidSignature() throws Exception {
-		var deserialized = verifier.verifyAndMap(payload, createSignature(), testKeyId(), HASH_ALGORITHMN, Order.class);
+		var deserialized = verifier.verifyAndMap(payload, signature(), testKeyId(), HASH_ALGORITHMN, Order.class);
 		var expected = new Order(orderId, name, new Price(amount, currency));
 		assertThat(deserialized).isEqualTo(expected);
 	}
 
 	@Test
 	void rejectsInvalidSignature() throws Exception {
-		assertThatThrownBy(() -> verifier.verifyAndMap(addAttributeTo(payload), createSignature(), testKeyId(),
+		assertThatThrownBy(() -> verifier.verifyAndMap(addAttributeTo(payload), signature(), testKeyId(),
 				HASH_ALGORITHMN, Order.class)).isInstanceOf(SignatureVerificationException.class);
 	}
 
@@ -59,7 +59,7 @@ class SignatureVerifierTest {
 		return new KeyId(testKeyPair.getKeyID());
 	}
 
-	private Base64String createSignature() throws NoSuchAlgorithmException, InvalidKeyException, SignatureException,
+	private Base64String signature() throws NoSuchAlgorithmException, InvalidKeyException, SignatureException,
 			JsonProcessingException, JOSEException {
 		return new PayloadSigner(testKeyPair.toPrivateKey(), HASH_ALGORITHMN).sign(payload);
 	}
