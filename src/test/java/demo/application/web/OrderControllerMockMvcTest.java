@@ -9,10 +9,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.SignatureException;
 import java.util.Map;
 import java.util.UUID;
 
@@ -25,10 +22,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.RSAKey;
 
 import demo.application.TestPublicKeyResolver;
@@ -158,7 +152,7 @@ class OrderControllerMockMvcTest {
 	}
 
 	@SuppressWarnings("unchecked")
-	private String manipulateJson(String payloadWithSignature) throws JsonProcessingException, JsonMappingException {
+	private String manipulateJson(String payloadWithSignature) throws Exception {
 		var json = jsonToMap(payloadWithSignature);
 		var payload = (Map<String, Object>) json.get("payload");
 		var price = (Map<String, Object>) payload.get("price");
@@ -166,8 +160,7 @@ class OrderControllerMockMvcTest {
 		return mapToJson(json);
 	}
 
-	private String payloadWithSignature(String rawPayload, PrivateKey privateKey) throws JsonProcessingException,
-			JsonMappingException, NoSuchAlgorithmException, InvalidKeyException, SignatureException, JOSEException {
+	private String payloadWithSignature(String rawPayload, PrivateKey privateKey) throws Exception {
 		var data = jsonToMap(rawPayload);
 		var hashAlgorithm = new HashAlgorithm("SHA256withRSA");
 		var signature = new PayloadSigner(privateKey, hashAlgorithm).sign(data);
@@ -176,11 +169,11 @@ class OrderControllerMockMvcTest {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Map<String, Object> jsonToMap(String rawPayload) throws JsonProcessingException, JsonMappingException {
+	private Map<String, Object> jsonToMap(String rawPayload) throws Exception {
 		return new ObjectMapper().readValue(rawPayload, Map.class);
 	}
 
-	private String mapToJson(Map<String, Object> payload) throws JsonProcessingException {
+	private String mapToJson(Map<String, Object> payload) throws Exception {
 		return new ObjectMapper().writeValueAsString(payload);
 	}
 
