@@ -46,10 +46,13 @@ class OrderControllerMockMvcTest {
 	@TestConfiguration
 	static class Config {
 
-		static RSAKey keyPair = KeyGenerator.newRandomRsaKeyPair("demo-key");
+		@Bean
+		RSAKey keyPair() {
+			return KeyGenerator.newRandomRsaKeyPair("demo-key");
+		}
 
 		@Bean
-		PublicKeyResolver publicKeyResolver() {
+		PublicKeyResolver publicKeyResolver(RSAKey keyPair) {
 			return new TestPublicKeyResolver(keyPair);
 		}
 
@@ -57,6 +60,9 @@ class OrderControllerMockMvcTest {
 
 	@Autowired
 	MockMvc mockMvc;
+
+	@Autowired
+	RSAKey keyPair;
 
 	@MockitoBean
 	OrderService orderService;
@@ -73,7 +79,7 @@ class OrderControllerMockMvcTest {
 					}
 				}
 				""".formatted(id);
-		var payloadWithSignature = payloadWithSignature(order, Config.keyPair.toPrivateKey());
+		var payloadWithSignature = payloadWithSignature(order, keyPair.toPrivateKey());
 		mockMvc.perform(put("/orders/%s".formatted(id)) //
 				.contentType(APPLICATION_JSON) //
 				.content(payloadWithSignature)) //
@@ -94,7 +100,7 @@ class OrderControllerMockMvcTest {
 					}
 				}
 				""".formatted(id);
-		var payloadWithSignature = payloadWithSignature(order, Config.keyPair.toPrivateKey());
+		var payloadWithSignature = payloadWithSignature(order, keyPair.toPrivateKey());
 		var reformattedJson = payloadWithSignature.lines().map(l -> format("   \t  %s \t  ", l)).collect(joining("\n"));
 		assert !payloadWithSignature.equals(reformattedJson);
 		mockMvc.perform(put("/orders/%s".formatted(id)) //
@@ -117,7 +123,7 @@ class OrderControllerMockMvcTest {
 					}
 				}
 				""".formatted(id);
-		var payloadWithSignature = payloadWithSignature(order, Config.keyPair.toPrivateKey());
+		var payloadWithSignature = payloadWithSignature(order, keyPair.toPrivateKey());
 		var manipulatedJson = manipulateJson(payloadWithSignature);
 
 		mockMvc.perform(put("/orders/%s".formatted(id)) //
@@ -139,8 +145,7 @@ class OrderControllerMockMvcTest {
 					}
 				}
 				""".formatted(id);
-		PrivateKey otherPrivateKey = KeyGenerator.newRandomRsaKeyPair(Config.keyPair.getKeyID() + "-another")
-				.toPrivateKey();
+		PrivateKey otherPrivateKey = KeyGenerator.newRandomRsaKeyPair(keyPair.getKeyID() + "-another").toPrivateKey();
 		var payloadWithSignature = payloadWithSignature(order, otherPrivateKey);
 		var manipulatedJson = manipulateJson(payloadWithSignature);
 
@@ -165,8 +170,8 @@ class OrderControllerMockMvcTest {
 		var data = jsonToMap(rawPayload);
 		var hashAlgorithm = "SHA256withRSA";
 		var signature = new PayloadSigner(privateKey, hashAlgorithm).sign(data);
-		return mapToJson(Map.of("payload", data, "signature", signature, "keyId", Config.keyPair.getKeyID(),
-				"algorithm", hashAlgorithm));
+		return mapToJson(Map.of("payload", data, "signature", signature, "keyId", keyPair.getKeyID(), "algorithm",
+				hashAlgorithm));
 	}
 
 	@SuppressWarnings("unchecked")
