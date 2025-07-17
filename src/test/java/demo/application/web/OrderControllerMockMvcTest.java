@@ -1,5 +1,6 @@
 package demo.application.web;
 
+import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -10,7 +11,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,7 +82,7 @@ class OrderControllerMockMvcTest {
 				}
 				""".formatted(id);
 		var payloadWithSignature = payloadWithSignature(payload, Config.keyPair.toPrivateKey());
-		var reformattedJson = payloadWithSignature.lines().map(l -> "   \t  " + l).collect(joining("\n"));
+		var reformattedJson = payloadWithSignature.lines().map(l -> format("   \t  %s \t  ", l)).collect(joining("\n"));
 		assert !payloadWithSignature.equals(reformattedJson);
 		mockMvc.perform(put("/orders/%s".formatted(id)) //
 				.contentType(APPLICATION_JSON) //
