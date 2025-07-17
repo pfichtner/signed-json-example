@@ -1,7 +1,10 @@
 package demo.application;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,46 +19,57 @@ import demo.application.crypto.HashAlgorithm;
 import demo.application.crypto.KeyId;
 import demo.application.crypto.SignatureUtil;
 import demo.application.crypto.SignatureVerificationException;
-import demo.application.crypto.SignatureVerifier;
 import demo.application.cyrpto.KeyGenerator;
+import demo.application.cyrpto.TestPublicKeyResolver;
 import demo.application.domain.Order;
 import demo.application.domain.Order.Price;
+import demo.application.domain.OrderApplicationService;
+import demo.application.domain.OrderService;
 
-class SignatureVerifierTest {
+class OrderApplicationServiceTest {
 
 	private static final HashAlgorithm HASH_ALGORITHMN = new HashAlgorithm("SHA256withRSA");
 
 	RSAKey testKeyPair = KeyGenerator.newRandomRsaKeyPair("some-random-key-id");
 
 	UUID orderId = UUID.randomUUID();
-	String name = "toothbrush";
+	String name = "vacuum cleaner";
 	double amount = 199.99;
 	String currency = "EUR";
 
-	Map<String, Object> payload = Map.of("id", orderId, //
-			"name", "toothbrush", //
-			"price", Map.of("amount", amount, "currency", currency));
+	Map<String, Object> payload = Map.of( //
+			"id", orderId, //
+			"name", name, //
+			"price", Map.of("amount", amount, "currency", currency) //
+	);
 
-	private SignatureVerifier verifier = new SignatureVerifier(new TestPublicKeyResolver(testKeyPair));
+	private OrderService domainService = mock();
+
+	private OrderApplicationService sut = new OrderApplicationService(new TestPublicKeyResolver(testKeyPair),
+			domainService);
 
 	@Test
 	void verifiesValidSignature() throws Exception {
-		var deserialized = verifier.verifyAndMap(payload, signature(), testKeyId(), HASH_ALGORITHMN, Order.class);
-		var expected = new Order(orderId, name, new Price(amount, currency));
-		assertThat(deserialized).isEqualTo(expected);
+		sut.handle(orderId, payload, signature(), testKeyId(), HASH_ALGORITHMN);
+		verify(domainService).create(orderId, new Order(orderId, name, new Price(amount, currency)));
+		verifyNoMoreInteractions(domainService);
 	}
 
 	@Test
 	void rejectsInvalidSignature() throws Exception {
-		assertThatThrownBy(() -> verifier.verifyAndMap(addAttributeTo(payload), signature(), testKeyId(),
-				HASH_ALGORITHMN, Order.class)).isInstanceOf(SignatureVerificationException.class)
+		assertThatThrownBy(
+				() -> sut.handle(orderId, addAttributeTo(payload), signature(), testKeyId(), HASH_ALGORITHMN))
+				.isInstanceOf(SignatureVerificationException.class)
 				.hasMessageContaining("Invalid", "signature", signature());
+		verifyNoInteractions(domainService);
 	}
 
 	@Test
 	void rejectsSignedByOtherKey() throws Exception {
-		assertThatThrownBy(() -> verifier.verifyAndMap(payload, signature(), new KeyId(testKeyId().value() + "-other"),
-				HASH_ALGORITHMN, Order.class)).isInstanceOf(SignatureVerificationException.class);
+		assertThatThrownBy(() -> sut.handle(orderId, addAttributeTo(payload), signature(),
+				new KeyId(testKeyId().value() + "-other"), HASH_ALGORITHMN))
+				.isInstanceOf(SignatureVerificationException.class);
+		verifyNoInteractions(domainService);
 	}
 
 	private KeyId testKeyId() {
