@@ -17,6 +17,7 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.RSAKey;
 
 import demo.application.crypto.Base64String;
+import demo.application.crypto.KeyId;
 import demo.application.crypto.SignatureVerificationException;
 import demo.application.crypto.SignatureVerifier;
 import demo.application.cyrpto.KeyGenerator;
@@ -40,8 +41,8 @@ class SignatureVerifierTest {
 
 	@Test
 	void verifiesValidSignature() throws Exception {
-		var deserialized = verifier.verifyAndMap(payload, createSignature(), testKeyPair.getKeyID(), HASH_ALGORITHMN,
-				Order.class);
+		var deserialized = verifier.verifyAndMap(payload, createSignature(), new KeyId(testKeyPair.getKeyID()),
+				HASH_ALGORITHMN, Order.class);
 		var expected = new Order(orderId, new Price(amount, currency));
 		assertThat(deserialized).isEqualTo(expected);
 	}
@@ -49,7 +50,7 @@ class SignatureVerifierTest {
 	@Test
 	void rejectsInvalidSignature() throws Exception {
 		assertThatThrownBy(() -> verifier.verifyAndMap(addAttributeTo(payload), createSignature(),
-				testKeyPair.getKeyID(), HASH_ALGORITHMN, Order.class))
+				new KeyId(testKeyPair.getKeyID()), HASH_ALGORITHMN, Order.class))
 				.isInstanceOf(SignatureVerificationException.class);
 	}
 

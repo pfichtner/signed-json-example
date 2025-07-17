@@ -6,8 +6,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.SignatureException;
-import java.util.Base64;
-import java.util.Base64.Encoder;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;

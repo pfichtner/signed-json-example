@@ -27,19 +27,19 @@ public class SignatureVerifier {
 	 * 
 	 * @param hashAlgorithmn TODO
 	 */
-	public <T> T verifyAndMap(Map<String, Object> payload, Base64String signature, String keyId, String hashAlgorithmn,
+	public <T> T verifyAndMap(Map<String, Object> payload, Base64String signature, KeyId keyId, String hashAlgorithmn,
 			Class<T> targetType) {
 		verify(payload, signature, keyId, hashAlgorithmn);
 		return objectMapper.convertValue(payload, targetType);
 	}
 
-	public <T> void verify(Map<String, Object> payload, Base64String signature, String keyId, String hashAlgorithmn) {
+	public <T> void verify(Map<String, Object> payload, Base64String signature, KeyId keyId, String hashAlgorithmn) {
 		if (!isSignatureOk(payload, signature, keyId, hashAlgorithmn)) {
 			throw new SignatureVerificationException("Invalid signature");
 		}
 	}
 
-	private boolean isSignatureOk(Map<String, Object> payload, Base64String signature, String keyId,
+	private boolean isSignatureOk(Map<String, Object> payload, Base64String signature, KeyId keyId,
 			String hashAlgorithmn) {
 		try {
 			return signature(keyResolver.resolve(keyId), jsonNormalizer.normalize(payload), hashAlgorithmn)

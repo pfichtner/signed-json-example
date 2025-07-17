@@ -5,6 +5,7 @@ import java.security.PublicKey;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.RSAKey;
 
+import demo.application.crypto.KeyId;
 import demo.application.crypto.PublicKeyResolver;
 import lombok.RequiredArgsConstructor;
 
@@ -14,8 +15,8 @@ public class TestPublicKeyResolver implements PublicKeyResolver {
 	private final RSAKey testKeyPair;
 
 	@Override
-	public PublicKey resolve(String kid) {
-		if (!kid.equals(testKeyPair.getKeyID())) {
+	public PublicKey resolve(KeyId kid) {
+		if (!kid.valueIs(testKeyPair.getKeyID())) {
 			throw new IllegalArgumentException("Unknown keyId " + kid);
 		}
 		try {
