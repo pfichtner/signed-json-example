@@ -56,6 +56,12 @@ class SignatureVerifierTest {
 				HASH_ALGORITHMN, Order.class)).isInstanceOf(SignatureVerificationException.class);
 	}
 
+	@Test
+	void rejectsSignedByOtherKey() throws Exception {
+		assertThatThrownBy(() -> verifier.verifyAndMap(payload, signature(), new KeyId(testKeyId().value() + "-other"),
+				HASH_ALGORITHMN, Order.class)).isInstanceOf(SignatureVerificationException.class);
+	}
+
 	private KeyId testKeyId() {
 		return new KeyId(testKeyPair.getKeyID());
 	}
