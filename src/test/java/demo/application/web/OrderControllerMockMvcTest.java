@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.util.Map;
 
@@ -35,8 +36,7 @@ class OrderControllerMockMvcTest {
 	@TestConfiguration
 	static class Config {
 
-		static String kid = "demo-key";
-		static RSAKey keyPair = KeyGenerator.newRandomRsaKeyPair(kid);
+		static RSAKey keyPair = KeyGenerator.newRandomRsaKeyPair("demo-key");
 
 		@Bean
 		PublicKeyResolver publicKeyResolver() {
@@ -60,7 +60,7 @@ class OrderControllerMockMvcTest {
 					}
 				}
 				""".formatted(id);
-		var payloadWithSignature = payloadWithSignature(payload);
+		var payloadWithSignature = payloadWithSignature(payload, Config.keyPair.toPrivateKey());
 		mockMvc.perform(put("/orders/%s".formatted(id)) //
 				.contentType(APPLICATION_JSON) //
 				.content(payloadWithSignature)) //
@@ -68,7 +68,7 @@ class OrderControllerMockMvcTest {
 	}
 
 	@Test
-	void refuses() throws Exception {
+	void refusesBecauseModified() throws Exception {
 		var id = "3aebf66c-d8e5-456a-887c-53e5fc45f0a1";
 		var payload = """
 				{
@@ -79,7 +79,30 @@ class OrderControllerMockMvcTest {
 					}
 				}
 				""".formatted(id);
-		var payloadWithSignature = payloadWithSignature(payload);
+		var payloadWithSignature = payloadWithSignature(payload, Config.keyPair.toPrivateKey());
+		var manipulatedJson = manipulateJson(payloadWithSignature);
+
+		mockMvc.perform(put("/orders/%s".formatted(id)) //
+				.contentType(APPLICATION_JSON) //
+				.content(manipulatedJson)) //
+				.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void refusesBecauseSignedByUnknownKey() throws Exception {
+		var id = "3aebf66c-d8e5-456a-887c-53e5fc45f0a1";
+		var payload = """
+				{
+					"id": "%s",
+					"price": {
+						"amount": 1.99,
+						"currency": "EUR"
+					}
+				}
+				""".formatted(id);
+		PrivateKey otherPrivateKey = KeyGenerator.newRandomRsaKeyPair(Config.keyPair.getKeyID() + "-another")
+				.toPrivateKey();
+		var payloadWithSignature = payloadWithSignature(payload, otherPrivateKey);
 		var manipulatedJson = manipulateJson(payloadWithSignature);
 
 		mockMvc.perform(put("/orders/%s".formatted(id)) //
@@ -97,11 +120,11 @@ class OrderControllerMockMvcTest {
 		return mapToJson(json);
 	}
 
-	private String payloadWithSignature(String rawPayload) throws JsonProcessingException, JsonMappingException,
-			NoSuchAlgorithmException, InvalidKeyException, SignatureException, JOSEException {
+	private String payloadWithSignature(String rawPayload, PrivateKey privateKey) throws JsonProcessingException,
+			JsonMappingException, NoSuchAlgorithmException, InvalidKeyException, SignatureException, JOSEException {
 		var data = jsonToMap(rawPayload);
-		var signature = new PayloadSigner(Config.keyPair.toPrivateKey(), "SHA256withRSA").sign(data);
-		var payload = Map.of("payload", data, "signature", signature, "keyId", Config.kid, "algorithm",
+		var signature = new PayloadSigner(privateKey, "SHA256withRSA").sign(data);
+		var payload = Map.of("payload", data, "signature", signature, "keyId", Config.keyPair.getKeyID(), "algorithm",
 				"SHA256withRSA");
 		return mapToJson(payload);
 	}
